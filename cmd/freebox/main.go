@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/moul/go-freebox"
+	"github.com/juju2013/go-freebox"
 )
 
 func main() {
@@ -27,9 +27,17 @@ func main() {
 		logrus.Fatalf("fbx.Login(): %v", err)
 	}
 
-	stats, err := fbx.DownloadsStats()
-	if err != nil {
-		logrus.Fatalf("fbx.DownloadsStats(): %v", err)
-	}
-	fmt.Println(stats)
+  airMedia, err := fbx.GetAirMediaReceivers()
+  if err != nil {
+		logrus.Errorf("fbx.getAirMediaReceivers(): %v", err)
+  } else {
+	  fmt.Printf("***** : %#v\n", airMedia)
+  }
+
+  callEntry, err := fbx.GetCallEntries()
+  if err != nil {
+		logrus.Errorf("fbx.GetCallEntries(): %v", err)
+  } else {
+	  fmt.Printf("***** : %#v\n", callEntry)
+  }
 }
