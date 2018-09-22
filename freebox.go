@@ -119,38 +119,6 @@ type Client struct {
 	App        App
 	apiVersion ApiVersion
 	client     *http.Client
-  airMediaReceivers *AirMediaReceiver
-}
-
-// Airmedia
-type AirMediaCapability struct {
-  Photo   bool    `json:"photo"`
-  Audio   bool    `json:"audio"`
-  Video   bool    `json:"video"`
-  Screen  bool    `json:"screen"`
-}
-
-type AirMediaReceiver struct {
-    Name                string    `json:"name"`
-    Password_protected  bool      `json:"password_protected"`
-    Capabilities        AirMediaCapability  `json:"capabilities"`
-}
-
-type apiAirMediaReceiver struct {
-	Success bool                `json:"success"`
-	Result  []AirMediaReceiver  `json:"result"`
-}
-
-// Call entries
-type CallEntry struct {
-  Id          int `json:"id"`
-  Type        string `json:"type"`
-  Datetime    int `json:"datetime"`
-  Number      string `json:"number"`
-  Name        string `json:"name"`
-  Duration    int `json:"duration"`
-  New         bool `json:"new"`
-  Contact_id  int `json:"contact_id"`
 }
 
 type apiCallEntry struct {
@@ -385,36 +353,6 @@ func (c *Client) DownloadsStats() (*apiResultDownloadsStats, error) {
 	}
 
 	var response apiResponseDownloadsStats
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.Result, nil
-}
-
-func (c *Client) GetAirMediaReceivers() (*[]AirMediaReceiver, error) {
-	body, err := c.GetResource("airmedia/receivers", true)
-	if err != nil {
-		return nil, err
-	}
-
-	var response apiAirMediaReceiver
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response.Result, nil
-}
-
-func (c *Client) GetCallEntries() (*[]CallEntry, error) {
-	body, err := c.GetResource("call/log/", true)
-	if err != nil {
-		return nil, err
-	}
-
-	var response apiCallEntry
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
