@@ -156,67 +156,53 @@ func (a *ApiVersion) ApiCode() string {
 
 // GetApiResource performs low-level GET request on the Freebox API
 func (c *Client) GetResource(resource string, authenticated bool) ([]byte, error) {
-	var url string
-	if authenticated {
-		url = fmt.Sprintf("%s%s%s/%s", strings.TrimRight(c.URL, "/"), c.apiVersion.BaseURL, c.apiVersion.ApiCode(), resource)
-	} else {
-		url = fmt.Sprintf("%s%s", c.URL, resource)
-	}
-	logrus.Debugf(">>> GET  %q", url)
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	if authenticated {
-		req.Header.Set("X-Fbx-App-Auth", c.App.sessionToken)
-	}
-
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	logrus.Debugf("<<< %s", body)
-
-	if resp.StatusCode > 299 {
-		return nil, fmt.Errorf("Status code: %d", resp.StatusCode)
-	}
-
-	return body, err
+  return c.httpRequest("GET", resource, nil, authenticated)
 }
+
+// PostResource post data and returns body
+func (c *Client) PostResource(resource string, data interface{}, authenticated bool) ([]byte, error) {
+  return c.httpRequest("POST", resource, data, authenticated)
+}
+
+// PostResource post data and returns body
+func (c *Client) PutResource(resource string, data interface{}, authenticated bool) ([]byte, error) {
+  return c.httpRequest("PUT", resource, data, authenticated)
+}
+
 
 func (a *ApiVersion) authBaseURL() string {
 	return strings.TrimLeft(a.BaseURL, "/") + a.ApiCode() + "/"
 }
 
-// PostResource post data and returns body
-func (c *Client) PostResource(resource string, data interface{}, authenticated bool) ([]byte, error) {
+// httpRequest performs low-level http request on the Freebox API
+func (c *Client) httpRequest(verb, resource string, data interface{}, authenticated bool) ([]byte, error){
 	var url string
+  var req *http.Request
+  var err error
+  
 	if authenticated {
-		url = fmt.Sprintf("%s%s%s", c.URL, c.apiVersion.authBaseURL(), resource)
+		url = fmt.Sprintf("%s%s%s/%s", strings.TrimRight(c.URL, "/"), c.apiVersion.BaseURL, c.apiVersion.ApiCode(), resource)
 	} else {
 		url = fmt.Sprintf("%s%s", c.URL, resource)
 	}
 
-	payload := new(bytes.Buffer)
-	encoder := json.NewEncoder(payload)
-	if err := encoder.Encode(data); err != nil {
-		return nil, err
-	}
-
-	payloadString := strings.TrimSpace(fmt.Sprintf("%s", payload))
-	logrus.Debugf(">>> POST %s payload=%s", url, payloadString)
-
-	req, err := http.NewRequest("POST", url, payload)
-	if err != nil {
-		return nil, err
-	}
-
+  if data != nil {
+    payload := new(bytes.Buffer)
+    encoder := json.NewEncoder(payload)
+    if err = encoder.Encode(data); err != nil {
+      return nil, err
+    }
+  	payloadString := strings.TrimSpace(fmt.Sprintf("%s", payload))
+    logrus.Debugf(">>> %s %s payload=%s", verb, url, payloadString)
+    req, err = http.NewRequest(verb, url, payload)
+  } else {
+  	logrus.Debugf(">>> %s  %q", verb, url)
+    req, err = http.NewRequest(verb, url, nil)
+    if err != nil {
+      return nil, err
+    }
+  }
+  
 	req.Header.Set("Content-Type", "application/json")
 	if authenticated {
 		req.Header.Set("X-Fbx-App-Auth", c.App.sessionToken)

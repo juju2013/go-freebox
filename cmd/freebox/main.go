@@ -42,11 +42,12 @@ func main() {
     if err := fbx.MarkAllRead(); nil != err {
   		logrus.Errorf("fbx.MarkAllRead(): %v", err)
     }
-    callEntry, err := fbx.GetCallEntrie(42)
+    callEntry, err := fbx.GetCallEntrie(523)
     if err != nil {
-  		logrus.Errorf("fbx.GetCallEntrie(42): %v", err)
+  		logrus.Errorf("fbx.GetCallEntrie(523): %v", err)
     } else {
   	  fmt.Printf("***** : %#v\n", callEntry)
+      fbx.MarkRead(callEntry.ID)
     }
   }
   
