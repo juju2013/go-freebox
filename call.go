@@ -50,6 +50,7 @@ func (c *Client) MarkAllRead() error {
   return err
 }
 
+// Get a call
 func (c *Client) GetCallEntrie(id int) (CallEntry, error) {
   payload := CallEntry{}
   err := c.GetResult(fmt.Sprintf("call/log/%v", id), &payload)

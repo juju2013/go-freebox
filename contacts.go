@@ -38,12 +38,3 @@ func (c *Client) GetContact(id int) (CallEntry, error) {
   err := c.GetResult(fmt.Sprintf("contact/%v", id), &payload)
   return payload, err
 }
-
-/*
-// Mark all as read
-func (c *Client) MarkAllRead() error {
-  _, err := c.PostResource("call/log/mark_all_as_read/", "", true)
-  return err
-}
-
-*/
