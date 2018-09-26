@@ -174,8 +174,24 @@ func (a *ApiVersion) authBaseURL() string {
 	return strings.TrimLeft(a.BaseURL, "/") + a.ApiCode() + "/"
 }
 
-// httpRequest performs low-level http request on the Freebox API
+// performs low-level http request, and reauthen if needed
 func (c *Client) httpRequest(verb, resource string, data interface{}, authenticated bool) ([]byte, error){
+  resp, body, err := c.httpRequest2(verb, resource, data, authenticated)
+  if authenticated && err == nil && resp.StatusCode == 403 {
+    fmt.Printf("DEBUG: try to relogin")
+    // session expired, do it again
+    c.Login()
+    resp, body, err = c.httpRequest2(verb, resource, data, authenticated)
+  }
+  
+	if resp.StatusCode > 299 {
+		err = fmt.Errorf("Status code: %d", resp.StatusCode)
+	}
+  return body, err
+}
+
+// httpRequest performs low-level http request on the Freebox API
+func (c *Client) httpRequest2(verb, resource string, data interface{}, authenticated bool) (*http.Response, []byte, error){
 	var url string
   var req *http.Request
   var err error
@@ -190,7 +206,7 @@ func (c *Client) httpRequest(verb, resource string, data interface{}, authentica
     payload := new(bytes.Buffer)
     encoder := json.NewEncoder(payload)
     if err = encoder.Encode(data); err != nil {
-      return nil, err
+      return nil, nil, err
     }
   	payloadString := strings.TrimSpace(fmt.Sprintf("%s", payload))
     logrus.Debugf(">>> %s %s payload=%s", verb, url, payloadString)
@@ -199,7 +215,7 @@ func (c *Client) httpRequest(verb, resource string, data interface{}, authentica
   	logrus.Debugf(">>> %s  %q", verb, url)
     req, err = http.NewRequest(verb, url, nil)
     if err != nil {
-      return nil, err
+      return nil, nil, err
     }
   }
   
@@ -210,18 +226,14 @@ func (c *Client) httpRequest(verb, resource string, data interface{}, authentica
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	logrus.Debugf("<<< %s", body)
 
-	if resp.StatusCode > 299 {
-		return nil, fmt.Errorf("Status code: %d", resp.StatusCode)
-	}
-
-	return body, err
+	return resp, body, err
 }
 
 // Connect tries to contact the Freebox API, and fetches API versions
