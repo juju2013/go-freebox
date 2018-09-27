@@ -122,10 +122,9 @@ type Client struct {
 }
 
 type apiCallEntry struct {
-	Success bool         `json:"success"`
-	Result  []CallEntry  `json:"result"`
+	Success bool        `json:"success"`
+	Result  []CallEntry `json:"result"`
 }
-
 
 // New returns a `Client` object with standard configuration
 func New() *Client {
@@ -156,68 +155,67 @@ func (a *ApiVersion) ApiCode() string {
 
 // GetApiResource performs low-level GET request on the Freebox API
 func (c *Client) GetResource(resource string, authenticated bool) ([]byte, error) {
-  return c.httpRequest("GET", resource, nil, authenticated)
+	return c.httpRequest("GET", resource, nil, authenticated)
 }
 
 // PostResource post data and returns body
 func (c *Client) PostResource(resource string, data interface{}, authenticated bool) ([]byte, error) {
-  return c.httpRequest("POST", resource, data, authenticated)
+	return c.httpRequest("POST", resource, data, authenticated)
 }
 
 // PostResource post data and returns body
 func (c *Client) PutResource(resource string, data interface{}, authenticated bool) ([]byte, error) {
-  return c.httpRequest("PUT", resource, data, authenticated)
+	return c.httpRequest("PUT", resource, data, authenticated)
 }
-
 
 func (a *ApiVersion) authBaseURL() string {
 	return strings.TrimLeft(a.BaseURL, "/") + a.ApiCode() + "/"
 }
 
 // performs low-level http request, and reauthen if needed
-func (c *Client) httpRequest(verb, resource string, data interface{}, authenticated bool) ([]byte, error){
-  resp, body, err := c.httpRequest2(verb, resource, data, authenticated)
-  if authenticated && err == nil && resp.StatusCode == 403 {
-    // session expired, do it again
-    c.Login()
-    resp, body, err = c.httpRequest2(verb, resource, data, authenticated)
-  }
-  
+func (c *Client) httpRequest(verb, resource string, data interface{}, authenticated bool) ([]byte, error) {
+	resp, body, err := c.httpRequest2(verb, resource, data, authenticated)
+	if authenticated && err == nil && resp.StatusCode == 403 {
+		// session expired, do it again
+		c.Login()
+		resp, body, err = c.httpRequest2(verb, resource, data, authenticated)
+	}
+
 	if resp.StatusCode > 299 {
 		err = fmt.Errorf("Status code: %d", resp.StatusCode)
 	}
-  return body, err
+	return body, err
 }
 
 // httpRequest performs low-level http request on the Freebox API
-func (c *Client) httpRequest2(verb, resource string, data interface{}, authenticated bool) (*http.Response, []byte, error){
+func (c *Client) httpRequest2(verb, resource string, data interface{}, authenticated bool) (*http.Response, []byte, error) {
 	var url string
-  var req *http.Request
-  var err error
-  
+	var req *http.Request
+	var err error
+
 	if authenticated {
 		url = fmt.Sprintf("%s%s%s/%s", strings.TrimRight(c.URL, "/"), c.apiVersion.BaseURL, c.apiVersion.ApiCode(), resource)
 	} else {
 		url = fmt.Sprintf("%s%s", c.URL, resource)
 	}
 
-  if data != nil {
-    payload := new(bytes.Buffer)
-    encoder := json.NewEncoder(payload)
-    if err = encoder.Encode(data); err != nil {
-      return nil, nil, err
-    }
-  	payloadString := strings.TrimSpace(fmt.Sprintf("%s", payload))
-    logrus.Debugf(">>> %s %s payload=%s", verb, url, payloadString)
-    req, err = http.NewRequest(verb, url, payload)
-  } else {
-  	logrus.Debugf(">>> %s  %q", verb, url)
-    req, err = http.NewRequest(verb, url, nil)
-    if err != nil {
-      return nil, nil, err
-    }
-  }
-  
+	if data != nil {
+		payload := new(bytes.Buffer)
+		encoder := json.NewEncoder(payload)
+		if err = encoder.Encode(data); err != nil {
+			return nil, nil, err
+		}
+		payloadString := strings.TrimSpace(fmt.Sprintf("%s", payload))
+		logrus.Debugf(">>> %s %s payload=%s", verb, url, payloadString)
+		req, err = http.NewRequest(verb, url, payload)
+	} else {
+		logrus.Debugf(">>> %s  %q", verb, url)
+		req, err = http.NewRequest(verb, url, nil)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 	if authenticated {
 		req.Header.Set("X-Fbx-App-Auth", c.App.sessionToken)

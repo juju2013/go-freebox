@@ -6,18 +6,20 @@ import (
 )
 
 type apiResponse struct {
-	Success bool          `json:"success"`
-	Result  interface{}   `json:"result"`
+	Success bool        `json:"success"`
+	Result  interface{} `json:"result"`
 }
 
 func (c *Client) GetResult(uri string, payload interface{}) error {
-  response := apiResponse {Result: payload}
-	body, err := c.GetResource(uri, true); if err != nil {
+	response := apiResponse{Result: payload}
+	body, err := c.GetResource(uri, true)
+	if err != nil {
 		return err
 	}
 
-	err = json.Unmarshal(body, &response); if err != nil {
+	err = json.Unmarshal(body, &response)
+	if err != nil {
 		return err
 	}
-  return nil
+	return nil
 }
