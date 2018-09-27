@@ -26,7 +26,7 @@ func (e *Epoch) UnmarshalJSON(data []byte) error {
   if err != nil {
       return err
   }
-  *e = Epoch(time.Unix(0, millis * int64(time.Millisecond)))
+  *e = Epoch(time.Unix(millis,0))
   return nil
 }
 

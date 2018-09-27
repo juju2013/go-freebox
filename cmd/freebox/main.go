@@ -26,42 +26,39 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("fbx.Login(): %v", err)
 	}
-
-  airMedia, err := fbx.GetAirMediaReceivers()
-  if err != nil {
+	airMedia, err := fbx.GetAirMediaReceivers()
+	if err != nil {
 		logrus.Errorf("fbx.getAirMediaReceivers(): %v", err)
-  } else {
-	  fmt.Printf("***** : %#v\n", airMedia)
-  }
+	} else {
+		fmt.Printf("***** : %#v\n", airMedia)
+	}
 
-  callEntries, err := fbx.GetCallEntries()
-  if err != nil {
+	callEntries, err := fbx.GetCallEntries()
+	if err != nil {
 		logrus.Errorf("fbx.GetCallEntries(): %v", err)
-  } else {
-	  fmt.Printf("***** : %#v\n", callEntries)
-    if err := fbx.MarkAllRead(); nil != err {
-  		logrus.Errorf("fbx.MarkAllRead(): %v", err)
-    }
-    callEntry, err := fbx.GetCallEntrie(523)
-    if err != nil {
-  		logrus.Errorf("fbx.GetCallEntrie(523): %v", err)
-    } else {
-  	  fmt.Printf("***** : %#v\n", callEntry)
-      fbx.MarkRead(callEntry.ID)
-    }
-  }
-  
-  Contacts, err := fbx.GetContacts()
-  if err != nil {
-		logrus.Errorf("fbx.GetContacts(): %v", err)
-  } else {
-	  fmt.Printf("***** : %#v\n", Contacts)
-    contact, err := fbx.GetContact(4)
-    if nil != err {
-  		logrus.Errorf("fbx.GetContact(4): %v", err)
-    } else {
-  	  fmt.Printf("***** : %#v\n", contact)
-    }
-  }
-
+	} else {
+		fmt.Printf("***** : %#v\n", callEntries)
+		//    if err := fbx.MarkAllRead(); nil != err {
+		//  		logrus.Errorf("fbx.MarkAllRead(): %v", err)
+		//    }
+		callEntry, err := fbx.GetCallEntrie(555)
+		if err != nil {
+			fmt.Printf("fbx.GetCallEntrie(555): %v", err)
+		} else {
+			fbx.MarkRead(callEntry.ID)
+			fmt.Printf("***** : %v\n", callEntry)
+		}
+		Contacts, err := fbx.GetContacts()
+		if err != nil {
+			logrus.Errorf("fbx.GetContacts(): %v", err)
+		} else {
+			fmt.Printf("***** : %#v\n", Contacts)
+			contact, err := fbx.GetContact(4)
+			if nil != err {
+				logrus.Errorf("fbx.GetContact(4): %v", err)
+			} else {
+				fmt.Printf("***** : %v\n", contact)
+			}
+		}
+	}
 }

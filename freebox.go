@@ -178,7 +178,6 @@ func (a *ApiVersion) authBaseURL() string {
 func (c *Client) httpRequest(verb, resource string, data interface{}, authenticated bool) ([]byte, error){
   resp, body, err := c.httpRequest2(verb, resource, data, authenticated)
   if authenticated && err == nil && resp.StatusCode == 403 {
-    fmt.Printf("DEBUG: try to relogin")
     // session expired, do it again
     c.Login()
     resp, body, err = c.httpRequest2(verb, resource, data, authenticated)
