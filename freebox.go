@@ -129,18 +129,28 @@ type apiCallEntry struct {
 // New returns a `Client` object with standard configuration
 func New() *Client {
 	client := Client{
-		URL:    "http://mafreebox.free.fr/",
+		URL:    "http://mafreebox.freebox.fr/",
 		client: &http.Client{},
 		App: App{
 			Identifier: "go-freebox",
 			Name:       "Go Freebox",
-			Version:    "0.1.0",
+			Version:    "0.8.0",
 			DeviceName: "Golang",
 		},
 	}
 	if os.Getenv("GOFBX_TOKEN") != "" {
 		client.App.token = os.Getenv("GOFBX_TOKEN")
 	}
+	if os.Getenv("GOFBX_URL") != "" {
+		client.URL = os.Getenv("GOFBX_URL")
+	}
+	if os.Getenv("GOFBX_ID") != "" {
+		client.App.Identifier = os.Getenv("GOFBX_ID")
+	}
+	if os.Getenv("GOFBX_NAME") != "" {
+		client.App.Name = os.Getenv("GOFBX_NAME")
+	}
+
 	return &client
 }
 
